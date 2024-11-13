@@ -57,6 +57,11 @@ bool hid_usb_mouse_move(void* inst, int8_t dx, int8_t dy) {
     return furi_hal_hid_mouse_move(dx, dy)
 }
 
+bool hid_usb_mouse_release_all(void* inst) {
+    UNUSED(inst);
+    return furi_hal_hid_mouse_release(0);
+}
+
 bool hid_usb_consumer_press(void* inst, uint16_t button) {
     UNUSED(inst);
     return furi_hal_hid_consumer_key_press(button);
@@ -71,6 +76,7 @@ bool hid_usb_release_all(void* inst) {
     UNUSED(inst);
     bool state = furi_hal_hid_kb_release_all();
     state &= furi_hal_hid_consumer_key_release_all();
+    state &= hid_usb_mouse_release_all(inst);
     return state;
 }
 
