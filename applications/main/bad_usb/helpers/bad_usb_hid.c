@@ -181,6 +181,27 @@ bool hid_ble_kb_release(void* inst, uint16_t button) {
     return ble_profile_hid_kb_release(ble_hid->profile, button);
 }
 
+bool hid_ble_mouse_press(void* inst, uint8_t button) {
+    BleHidInstance* ble_hid = inst;
+    furi_assert(ble_hid);
+    return ble_profile_hid_mouse_press(ble_hid->profile, button);
+}
+bool hid_ble_mouse_release(void* inst, uint8_t button) {
+    BleHidInstance* ble_hid = inst;
+    furi_assert(ble_hid);
+    return ble_profile_hid_mouse_release(ble_hid->profile, button);
+}
+bool hid_ble_mouse_scroll(void* inst, int8_t delta) {
+    BleHidInstance* ble_hid = inst;
+    furi_assert(ble_hid);
+    return ble_profile_hid_mouse_scroll(ble_hid->profile, delta);
+}
+bool hid_ble_mouse_move(void* inst, int8_t dx, int8_t dy) {
+    BleHidInstance* ble_hid = inst;
+    furi_assert(ble_hid);
+    return ble_profile_hid_mouse_move(ble_hid->profile, dx, dy);
+}
+
 bool hid_ble_consumer_press(void* inst, uint16_t button) {
     BleHidInstance* ble_hid = inst;
     furi_assert(ble_hid);
@@ -198,6 +219,7 @@ bool hid_ble_release_all(void* inst) {
     furi_assert(ble_hid);
     bool state = ble_profile_hid_kb_release_all(ble_hid->profile);
     state &= ble_profile_hid_consumer_key_release_all(ble_hid->profile);
+    state &= ble_profile_hid_mouse_release_all(ble_hid->profile);
     return state;
 }
 
@@ -215,6 +237,10 @@ static const BadUsbHidApi hid_api_ble = {
 
     .kb_press = hid_ble_kb_press,
     .kb_release = hid_ble_kb_release,
+    .mouse_press = hid_ble_mouse_press,
+    .mouse_release = hid_ble_mouse_release,
+    .mouse_scroll = hid_ble_mouse_scroll,
+    .mouse_move = hid_ble_mouse_move,
     .consumer_press = hid_ble_consumer_press,
     .consumer_release = hid_ble_consumer_release,
     .release_all = hid_ble_release_all,
