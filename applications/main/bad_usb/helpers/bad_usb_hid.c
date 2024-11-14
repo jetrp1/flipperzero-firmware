@@ -54,7 +54,7 @@ bool hid_usb_mouse_scroll(void* inst, int8_t delta) {
 
 bool hid_usb_mouse_move(void* inst, int8_t dx, int8_t dy) {
     UNUSED(inst);
-    return furi_hal_hid_mouse_move(dx, dy)
+    return furi_hal_hid_mouse_move(dx, dy);
 }
 
 bool hid_usb_mouse_release_all(void* inst) {
