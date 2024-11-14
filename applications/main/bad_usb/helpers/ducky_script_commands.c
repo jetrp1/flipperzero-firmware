@@ -191,6 +191,31 @@ static int32_t ducky_fnc_waitforbutton(BadUsbScript* bad_usb, const char* line, 
     return SCRIPT_STATE_WAIT_FOR_BTN;
 }
 
+static int32_t ducky_fnc_mouse(BadUsbScript* bad_usb, const char* line, int32_T param) {
+    UNUSED(param);
+
+    return SCRIPT_STATE_CMD_UNKNOWN; // not yet implemented
+}
+
+static int32_t ducky_fnc_mouse_click(BadUsbScript* bad_usb, const char* line, int32_T param) {
+    UNUSED(param);
+    UNUSED(bad_usb);
+    UNUSED(line);
+
+    // param == 0 is a mouse click
+    // param == 1 is a mouse scroll
+
+    return SCRIPT_STATE_CMD_UNKNOWN; // not yet implemented
+}
+
+static int32_t ducky_fnc_mouse_move(BadUsbScript* bad_usb, const char* line, int32_T param) {
+    UNUSED(param);
+    UNUSED(bad_usb);
+    UNUSED(line);
+
+    return SCRIPT_STATE_CMD_UNKNOWN; // not yet implemented
+}
+
 static const DuckyCmd ducky_commands[] = {
     {"REM", NULL, -1},
     {"ID", NULL, -1},
@@ -213,6 +238,13 @@ static const DuckyCmd ducky_commands[] = {
     {"WAIT_FOR_BUTTON_PRESS", ducky_fnc_waitforbutton, -1},
     {"MEDIA", ducky_fnc_media, -1},
     {"GLOBE", ducky_fnc_globe, -1},
+    {"MOUSE", ducky_fnc_mouse, -1},
+};
+
+static const DuckyCmd ducky_mouse_commands[] = {
+    {"CLICK", ducky_fnc_mouse_click, 0},
+    {"SCROLL", ducky_fnc_mouse_click, 1},
+    {"MOVE", ducky_fnc_mouse_move, -1},
 };
 
 #define TAG "BadUsb"
