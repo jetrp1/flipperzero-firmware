@@ -224,15 +224,15 @@ static int32_t ducky_fnc_mouse_scroll(BadUsbScript* bad_usb, const char* line, i
 
     line = &line[strcspn(line, " ") + 1];
     line = &line[strcspn(line, " ") + 1];
-    uint32_t mouse_scroll_count = 0;
-    bool state = ducky_get_number(line, &mouse_scroll_count); // will break since numbers can be negative
+    int32_t mouse_scroll_dist = 0;
 
-    if (!state) {
-        return ducky_error(bad_usb, "Invalid number %s", line);
+    if (strint_to_int32(line, NULL, &mouse_scroll_dist, 10) != StrintParseNoError) {
+        return ducky_error(bad_usb, "Invalid Number %s", line);
     }
 
-    bad_usb->hid->mouse_scroll(bad_usb->hid_inst, mouse_scroll_count);
-    return 0; 
+    bad_usb->hid->mouse_scroll(bad_usb->hid_inst, mouse_scroll_dist);
+
+    return 0;
 }
 
 static int32_t ducky_fnc_mouse_move(BadUsbScript* bad_usb, const char* line, int32_t param) {
