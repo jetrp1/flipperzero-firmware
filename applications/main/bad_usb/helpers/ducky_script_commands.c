@@ -125,32 +125,64 @@ static int32_t ducky_fnc_altstring(BadUsbScript* bad_usb, const char* line, int3
 
 static int32_t ducky_fnc_hold(BadUsbScript* bad_usb, const char* line, int32_t param) {
     UNUSED(param);
+    bool isMouse = false;
 
     line = &line[ducky_get_command_len(line) + 1];
+
+    // Handle Keyboard keys here
     uint16_t key = ducky_get_keycode(bad_usb, line, true);
     if(key == HID_KEYBOARD_NONE) {
         return ducky_error(bad_usb, "No keycode defined for %s", line);
     }
+
+    // Handle Mouse Keys here
+    key = ducky_get_mouse_keycode_by_name(line);
+    if (key != HID_MOUSE_INVALID) {
+        isMouse = true;
+    }
+
     bad_usb->key_hold_nb++;
     if(bad_usb->key_hold_nb > (HID_KB_MAX_KEYS - 1)) {
         return ducky_error(bad_usb, "Too many keys are hold");
     }
+
+    if (isMouse) {
+        bad_usb->hid->mouse_press(bad_usb->hid_inst, key);
+        return 0;
+    }
+
     bad_usb->hid->kb_press(bad_usb->hid_inst, key);
     return 0;
 }
 
 static int32_t ducky_fnc_release(BadUsbScript* bad_usb, const char* line, int32_t param) {
     UNUSED(param);
+    bool isMouse = false;
 
     line = &line[ducky_get_command_len(line) + 1];
+
+    //Handle Keyboard Keys here
     uint16_t key = ducky_get_keycode(bad_usb, line, true);
     if(key == HID_KEYBOARD_NONE) {
         return ducky_error(bad_usb, "No keycode defined for %s", line);
     }
+
+    // Handle Mouse Keys here
+    key = ducky_get_mouse_keycode_by_name(line);
+    if (key != HID_MOUSE_INVALID) {
+        isMouse = true;
+    }
+
     if(bad_usb->key_hold_nb == 0) {
         return ducky_error(bad_usb, "No keys are hold");
     }
     bad_usb->key_hold_nb--;
+
+    if (isMouse) {
+        bad_usb->hid->mouse_release(bad_usb->hid_inst, key);
+        return 0;
+    }
+
     bad_usb->hid->kb_release(bad_usb->hid_inst, key);
     return 0;
 }
@@ -192,37 +224,9 @@ static int32_t ducky_fnc_waitforbutton(BadUsbScript* bad_usb, const char* line, 
     return SCRIPT_STATE_WAIT_FOR_BTN;
 }
 
-static int32_t ducky_fnc_mouse_leftclick(BadUsbScript* bad_usb, const char* line, int32_t param) {
-    UNUSED(param);
-    UNUSED(line);
-
-    bad_usb->hid->mouse_press(bad_usb->hid_inst, HID_MOUSE_BTN_LEFT);
-    bad_usb->hid->mouse_release(bad_usb->hid_inst, HID_MOUSE_BTN_LEFT);
-    return 0;
-}
-
-static int32_t ducky_fnc_mouse_rightclick(BadUsbScript* bad_usb, const char* line, int32_t param) {
-    UNUSED(param);
-    UNUSED(line);
-
-    bad_usb->hid->mouse_press(bad_usb->hid_inst, HID_MOUSE_BTN_RIGHT);
-    bad_usb->hid->mouse_release(bad_usb->hid_inst, HID_MOUSE_BTN_RIGHT);
-    return 0;
-}
-
-static int32_t ducky_fnc_mouse_middleclick(BadUsbScript* bad_usb, const char* line, int32_t param) {
-    UNUSED(param);
-    UNUSED(line);
-
-    bad_usb->hid->mouse_press(bad_usb->hid_inst, HID_MOUSE_BTN_WHEEL);
-    bad_usb->hid->mouse_release(bad_usb->hid_inst, HID_MOUSE_BTN_WHEEL);
-    return 0;
-}
-
 static int32_t ducky_fnc_mouse_scroll(BadUsbScript* bad_usb, const char* line, int32_t param) {
     UNUSED(param);
 
-    line = &line[strcspn(line, " ") + 1];
     line = &line[strcspn(line, " ") + 1];
     int32_t mouse_scroll_dist = 0;
 
@@ -237,7 +241,7 @@ static int32_t ducky_fnc_mouse_scroll(BadUsbScript* bad_usb, const char* line, i
 
 static int32_t ducky_fnc_mouse_move(BadUsbScript* bad_usb, const char* line, int32_t param) {
     UNUSED(param);
-    line = &line[strcspn(line, " ") + 1];
+
     line = &line[strcspn(line, " ") + 1];
     int32_t mouse_move_x = 0;
     int32_t mouse_move_y = 0;
@@ -255,40 +259,6 @@ static int32_t ducky_fnc_mouse_move(BadUsbScript* bad_usb, const char* line, int
     bad_usb->hid->mouse_move(bad_usb->hid_inst, mouse_move_x, mouse_move_y);
 
     return 0;
-}
-
-static const DuckyCmd ducky_mouse_commands[] = {
-    {"LEFTCLICK", ducky_fnc_mouse_leftclick, 0},
-    {"RIGHTCLICK", ducky_fnc_mouse_rightclick, 0},
-    {"MIDDLECLICK", ducky_fnc_mouse_middleclick, 0},
-    {"SCROLL", ducky_fnc_mouse_scroll, 0},
-    {"MOVE", ducky_fnc_mouse_move, -1},
-};
-
-static int32_t ducky_fnc_mouse(BadUsbScript* bad_usb, const char* line, int32_t param) {
-    UNUSED(param);
-    FURI_LOG_D("Worker", "ducky_fnc_mouse");
-
-    const char* mouse_cmd = &line[strcspn(line, " ") + 1];
-    size_t mouse_cmd_len = strcspn(mouse_cmd, " ");
-
-    for (size_t i = 0; i < COUNT_OF(ducky_mouse_commands); i++) {
-        size_t cmd_cmp_len = strlen(ducky_mouse_commands[i].name);
-
-        if (mouse_cmd_len != cmd_cmp_len) {
-            continue;
-        }
-
-        if (strncmp(ducky_mouse_commands[i].name, mouse_cmd, mouse_cmd_len) == 0) {
-            if (ducky_mouse_commands[i].callback == NULL) {
-                return 0;
-            } else {
-                return (ducky_mouse_commands[i].callback)(bad_usb, line, ducky_mouse_commands[i].param);
-            }
-        }
-    }
-
-    return SCRIPT_STATE_CMD_UNKNOWN; 
 }
 
 static const DuckyCmd ducky_commands[] = {
@@ -313,7 +283,10 @@ static const DuckyCmd ducky_commands[] = {
     {"WAIT_FOR_BUTTON_PRESS", ducky_fnc_waitforbutton, -1},
     {"MEDIA", ducky_fnc_media, -1},
     {"GLOBE", ducky_fnc_globe, -1},
-    {"MOUSE", ducky_fnc_mouse, -1},
+    {"MOUSEMOVE", ducky_fnc_mouse_move, -1},
+    {"MOUSE_MOVE", ducky_fnc_mouse_move, -1},
+    {"MOUSESCROLL", ducky_fnc_mouse_scroll, -1},
+    {"MOUSE_SCROLL", ducky_fnc_mouse_scroll, -1},
 };
 
 #define TAG "BadUsb"

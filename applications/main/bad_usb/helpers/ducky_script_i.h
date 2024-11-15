@@ -18,6 +18,8 @@ extern "C" {
 
 #define FILE_BUFFER_LEN 16
 
+#define HID_MOUSE_INVALID 0
+
 struct BadUsbScript {
     FuriHalUsbHidConfig hid_cfg;
     const BadUsbHidApi* hid;
@@ -54,6 +56,8 @@ bool ducky_is_line_end(const char chr);
 uint16_t ducky_get_keycode_by_name(const char* param);
 
 uint16_t ducky_get_media_keycode_by_name(const char* param);
+
+uint8_t ducky_get_mouse_keycode_by_name(const char* param);
 
 bool ducky_get_number(const char* param, uint32_t* val);
 
