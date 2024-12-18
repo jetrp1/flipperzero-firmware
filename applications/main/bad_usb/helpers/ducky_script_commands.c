@@ -137,7 +137,7 @@ static int32_t ducky_fnc_hold(BadUsbScript* bad_usb, const char* line, int32_t p
 
     // Handle Mouse Keys here
     key = ducky_get_mouse_keycode_by_name(line);
-    if (key != HID_MOUSE_INVALID) {
+    if(key != HID_MOUSE_INVALID) {
         isMouse = true;
     }
 
@@ -146,7 +146,7 @@ static int32_t ducky_fnc_hold(BadUsbScript* bad_usb, const char* line, int32_t p
         return ducky_error(bad_usb, "Too many keys are hold");
     }
 
-    if (isMouse) {
+    if(isMouse) {
         bad_usb->hid->mouse_press(bad_usb->hid_inst, key);
         return 0;
     }
@@ -169,7 +169,7 @@ static int32_t ducky_fnc_release(BadUsbScript* bad_usb, const char* line, int32_
 
     // Handle Mouse Keys here
     key = ducky_get_mouse_keycode_by_name(line);
-    if (key != HID_MOUSE_INVALID) {
+    if(key != HID_MOUSE_INVALID) {
         isMouse = true;
     }
 
@@ -178,7 +178,7 @@ static int32_t ducky_fnc_release(BadUsbScript* bad_usb, const char* line, int32_
     }
     bad_usb->key_hold_nb--;
 
-    if (isMouse) {
+    if(isMouse) {
         bad_usb->hid->mouse_release(bad_usb->hid_inst, key);
         return 0;
     }
@@ -230,7 +230,7 @@ static int32_t ducky_fnc_mouse_scroll(BadUsbScript* bad_usb, const char* line, i
     line = &line[strcspn(line, " ") + 1];
     int32_t mouse_scroll_dist = 0;
 
-    if (strint_to_int32(line, NULL, &mouse_scroll_dist, 10) != StrintParseNoError) {
+    if(strint_to_int32(line, NULL, &mouse_scroll_dist, 10) != StrintParseNoError) {
         return ducky_error(bad_usb, "Invalid Number %s", line);
     }
 
@@ -246,13 +246,13 @@ static int32_t ducky_fnc_mouse_move(BadUsbScript* bad_usb, const char* line, int
     int32_t mouse_move_x = 0;
     int32_t mouse_move_y = 0;
 
-    if (strint_to_int32(line, NULL, &mouse_move_x, 10) != StrintParseNoError) {
+    if(strint_to_int32(line, NULL, &mouse_move_x, 10) != StrintParseNoError) {
         return ducky_error(bad_usb, "Invalid Number %s", line);
     }
 
     line = &line[strcspn(line, " ") + 1];
 
-    if (strint_to_int32(line, NULL, &mouse_move_y, 10) != StrintParseNoError) {
+    if(strint_to_int32(line, NULL, &mouse_move_y, 10) != StrintParseNoError) {
         return ducky_error(bad_usb, "Invalid Number %s", line);
     }
 

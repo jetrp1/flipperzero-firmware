@@ -144,12 +144,13 @@ uint16_t ducky_get_media_keycode_by_name(const char* param) {
 }
 
 uint8_t ducky_get_mouse_keycode_by_name(const char* param) {
-    for (size_t i = 0; i < COUNT_OF(ducky_mouse_keys); i++) {
+    for(size_t i = 0; i < COUNT_OF(ducky_mouse_keys); i++) {
         size_t key_cmd_len = strlen(ducky_mouse_keys[i].name);
-        if((strncmp(param, ducky_mouse_keys[i].name, key_cmd_len) == 0) && (ducky_is_line_end(param[key_cmd_len]))) {
+        if((strncmp(param, ducky_mouse_keys[i].name, key_cmd_len) == 0) &&
+           (ducky_is_line_end(param[key_cmd_len]))) {
             return ducky_mouse_keys[i].keycode;
         }
-    } 
+    }
 
     return HID_MOUSE_INVALID;
 }

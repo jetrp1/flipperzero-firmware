@@ -195,7 +195,7 @@ static int32_t ducky_parse_line(BadUsbScript* bad_usb, FuriString* line) {
 
     // Mouse Keys
     uint16_t key = ducky_get_mouse_keycode_by_name(line_tmp);
-    if (key != HID_MOUSE_INVALID) {
+    if(key != HID_MOUSE_INVALID) {
         bad_usb->hid->mouse_press(bad_usb->hid_inst, key);
         bad_usb->hid->mouse_release(bad_usb->hid_inst, key);
         return 0;
