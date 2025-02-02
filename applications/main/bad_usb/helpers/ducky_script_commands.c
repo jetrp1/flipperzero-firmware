@@ -125,66 +125,58 @@ static int32_t ducky_fnc_altstring(BadUsbScript* bad_usb, const char* line, int3
 
 static int32_t ducky_fnc_hold(BadUsbScript* bad_usb, const char* line, int32_t param) {
     UNUSED(param);
-    bool isMouse = false;
-
     line = &line[ducky_get_command_len(line) + 1];
 
-    // Handle Keyboard keys here
-    uint16_t key = ducky_get_keycode(bad_usb, line, true);
-    if(key == HID_KEYBOARD_NONE) {
-        return ducky_error(bad_usb, "No keycode defined for %s", line);
+    if(bad_usb->key_hold_nb > (HID_KB_MAX_KEYS - 1)) {
+        return ducky_error(bad_usb, "Too many keys are held");
     }
 
     // Handle Mouse Keys here
-    key = ducky_get_mouse_keycode_by_name(line);
-    if(key != HID_MOUSE_INVALID) {
-        isMouse = true;
-    }
-
-    bad_usb->key_hold_nb++;
-    if(bad_usb->key_hold_nb > (HID_KB_MAX_KEYS - 1)) {
-        return ducky_error(bad_usb, "Too many keys are hold");
-    }
-
-    if(isMouse) {
+    uint16_t key = ducky_get_mouse_keycode_by_name(line);
+    if (key != HID_MOUSE_NONE) {
+        bad_usb->key_hold_nb++;
         bad_usb->hid->mouse_press(bad_usb->hid_inst, key);
         return 0;
     }
 
-    bad_usb->hid->kb_press(bad_usb->hid_inst, key);
-    return 0;
+    // Handle Keyboard keys here
+    key = ducky_get_keycode(bad_usb, line, true);
+    if (key != HID_KEYBOARD_NONE) {
+        bad_usb->key_hold_nb++;
+        bad_usb->hid->kb_press(bad_usb->hid_inst, key);
+        return 0;
+    }
+
+    // keyboard and mouse were none
+    return ducky_error(bad_usb, "Unknown keycode for %s", line);
 }
 
 static int32_t ducky_fnc_release(BadUsbScript* bad_usb, const char* line, int32_t param) {
     UNUSED(param);
-    bool isMouse = false;
-
     line = &line[ducky_get_command_len(line) + 1];
 
-    //Handle Keyboard Keys here
-    uint16_t key = ducky_get_keycode(bad_usb, line, true);
-    if(key == HID_KEYBOARD_NONE) {
-        return ducky_error(bad_usb, "No keycode defined for %s", line);
+    if(bad_usb->key_hold_nb == 0) {
+        return ducky_error(bad_usb, "No keys are held");
     }
 
     // Handle Mouse Keys here
-    key = ducky_get_mouse_keycode_by_name(line);
-    if(key != HID_MOUSE_INVALID) {
-        isMouse = true;
-    }
-
-    if(bad_usb->key_hold_nb == 0) {
-        return ducky_error(bad_usb, "No keys are hold");
-    }
-    bad_usb->key_hold_nb--;
-
-    if(isMouse) {
+    uint16_t key = ducky_get_mouse_keycode_by_name(line);
+    if (key != HID_MOUSE_NONE) {
+        bad_usb->key_hold_nb--;
         bad_usb->hid->mouse_release(bad_usb->hid_inst, key);
         return 0;
     }
 
-    bad_usb->hid->kb_release(bad_usb->hid_inst, key);
-    return 0;
+    //Handle Keyboard Keys here
+    key = ducky_get_keycode(bad_usb, line, true);
+    if(key != HID_KEYBOARD_NONE) {
+        bad_usb->key_hold_nb--;
+        bad_usb->hid->kb_release(bad_usb->hid_inst, key);
+        return 0;
+    }
+
+    // keyboard and mouse were none
+    return ducky_error(bad_usb, "No keycode defined for %s", line);
 }
 
 static int32_t ducky_fnc_media(BadUsbScript* bad_usb, const char* line, int32_t param) {
